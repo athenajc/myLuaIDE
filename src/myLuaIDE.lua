@@ -169,12 +169,10 @@ function dprint(v0, v1, v2, v3, v4, v5, v6)
         MyApp.m_debug_info:Clear()
         v0 = ""
     end
-    local s = arg_str(v0, v1, v2, v3, v4, v5, v6)
-    print(s)
-    MyApp.m_debug_info:AppendText(s);
+    local s = arg_str(v1, v2, v3, v4, v5, v6)
+    print(v0,s)
+    MyApp.m_debug_info:print(v0, s);
 end
-
-dlog = dprint
 
 function log(v0, v1, v2, v3, v4, v5, v6)    
     local s = arg_str(v0, v1, v2, v3, v4, v5, v6)
@@ -250,11 +248,8 @@ function get_file_mod_time(filePath)
 end
 
 function file_exist(path)
-    if path and #path > 0 then
-        local fn = wx.wxFileName(path)
-        return fn:FileExists()
-    end
-    return false
+    --log(path, wx.wxFileExists(path))
+    return wx.wxFileExists(path)
 end
 
 function add_tree(tree, root, lst, depth)
@@ -293,7 +288,7 @@ function c_doc_init(doc)
         local output = file:read('*all')
         file:close()
         print("file close")
-        dprint("["..tostring(output).."]") 
+        dprint("Execution Error", "["..tostring(output).."]") 
         print(output)     
     end
 
@@ -306,7 +301,7 @@ function c_doc_init(doc)
         --log(path)
         local cmd = "cd "..path.." && "..SDCC_path.." --debug "..filename.." 2>&1"
         --local cmd = "C:/tools/SDCC/bin/SDCC.exe 2>&1"
-        dprint(cmd)
+        dprint("Precompile", cmd)
         local result = exec_cmd_get_stdout_stderr(cmd)
         print("cmd done")
         return true -- return true if it compiled ok
@@ -424,7 +419,7 @@ function python_doc_init(doc)
     end
 
     function python_doc:precompile()
-        dlog("python not support compile yet, please select Run")
+        dprint("Precompile", "python not support compile yet, please select Run")
     end
     
     function python_doc:get_func_list(tree)
@@ -495,16 +490,16 @@ function lua_doc_init(doc)
     function lua:precompile()
         local doc = lua.doc --MyApp.get_current_doc()
 
-        dlog("lua_precompile")
+        log("precompile")
         -- do the compilation
         local ret, errMsg, line_num = wxlua.CompileLuaScript(doc:GetText(), doc.m_filepath)
 
         if line_num > -1 then
-            dlog("!!! Error at line :"..tostring(line_num).."\n"..errMsg.."\n\n")
+            dprint("Error at line :", tostring(line_num).."\n"..errMsg.."\n\n")
             doc:GotoLine(line_num-1)
             return false
         else
-            dlog("***  Compile pass!\n\n")
+            dprint("Compile", "Compile pass!\n\n")
         end
 
         return true -- return true if it compiled ok
@@ -512,7 +507,7 @@ function lua_doc_init(doc)
 
     function lua:run_doc(filename)
         local cmd = wxLua_path.." --nostdout /c "..filename
-        dprint(cmd)
+        dprint("Run", cmd)
         os.execute(cmd)  -- /c with console
     end
 
@@ -645,31 +640,45 @@ function lua_doc_init(doc)
 end
 
 function MyDebugNB:create(parent, frame)
-    local ctrl = wxaui.wxAuiNotebook(frame, wx.wxID_ANY,
+    local self = wxaui.wxAuiNotebook(frame, wx.wxID_ANY,
                                 wx.wxDefaultPosition, wx.wxDefaultSize,
                                 wxaui.wxAUI_NB_DEFAULT_STYLE + wxaui.wxAUI_NB_TAB_EXTERNAL_MOVE + wx.wxNO_BORDER 
                                 - wxaui.wxAUI_NB_CLOSE_ON_ACTIVE_TAB);
 
+    function self:AddListItem(lst)
+        local n = self.list:GetItemCount()
 
-    local text = wx.wxTextCtrl(ctrl, wx.wxID_ANY, "",
-                          wx.wxDefaultPosition, wx.wxDefaultSize,
-                          wx.wxTE_READONLY + wx.wxTE_MULTILINE + wx.wxTE_RICH )
-    --local text = wxstc.wxStyledTextCtrl(ctrl, wx.wxID_ANY,
-    --                                  wx.wxDefaultPosition, wx.wxDefaultSize,
-    --                                  wx.wxSUNKEN_BORDER)
+        n = self.list:InsertItem(n, lst[1])
+        self.list:SetItem(n, 1, tostring(lst[2]))
+        self.list:SetItem(n, 2, tostring(lst[3]))    
+        return n
+    end
 
-    parent.m_debug_info = text    
-    
-    --text:SetDefaultStyle(wx.wxTextAttr(wx.wxRED)) 
-    --text:AppendText("Red text\n")
-    --text:SetDefaultStyle(wx.wxTextAttr(wx.wxRED, wx.wxGREEN))
-    --text:AppendText("Red on green text\n")
-    --text:SetDefaultStyle(wx.wxTextAttr(wx.wxBLUE, wx.wxColour(127, 127, 127)))
-    --text:AppendText("Blue on grey text\n")
+    function self:print(s1, s2)
+        local dt =  wx.wxDateTime:Now()
+        local time = string.format("%02d:%02d:%02d", dt.Hour, dt.Minute, dt.Second)
+        self:AddListItem({time, s1, s2})
+        self:Update()
+    end
 
-    ctrl:AddPage(parent.m_debug_info, wxT("Debug"), false, get_bitmap(wx.wxART_HELP_SIDE_PANEL) );
-        
-    return ctrl;
+    function self:Clear()
+        self.list:DeleteAllItems()
+    end
+
+    self.list = wx.wxListCtrl( self, wx.wxID_ANY, wx.wxDefaultPosition, wx.wxDefaultSize, wx.wxLC_REPORT+wx.wxBORDER_NONE)
+  	    
+    self.list:InsertColumn(0, "Time", wx.wxLIST_FORMAT_RIGHT)
+    self.list:InsertColumn(1, "Event")
+    self.list:InsertColumn(2, "Message")
+    self:print("init", "init ok")
+    self.list:SetColumnWidth(0, 80)
+    self.list:SetColumnWidth(1, 80)
+    self.list:SetColumnWidth(2, 800)
+
+    self:AddPage(self.list, wxT("Debug"), false, get_bitmap(wx.wxART_HELP_SIDE_PANEL) );
+
+    parent.m_debug_info = self    
+    return self
 end
 
 function MyLogNB:create(parent, frame)
@@ -1066,7 +1075,7 @@ function MyDoc(parent, panel, id, filepath)
         local output = file:read('*all')
         file:close()
         
-        dprint(output) 
+        dprint("Execute cmd", output) 
     end
 
     function self:run_doc()
@@ -1103,7 +1112,7 @@ function MyDoc(parent, panel, id, filepath)
             exe = SDCC_path
         end
         local cmd = exe.." "..path
-        dprint(cmd)
+        dprint("Run", cmd)
         --os.execute(cmd)          
         wx.wxFileName.SetCwd(wx.wxFileName(path):GetPath())
         self:exec_cmd(cmd)
