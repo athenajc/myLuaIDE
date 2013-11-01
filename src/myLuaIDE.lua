@@ -4,6 +4,11 @@ require("wx")
 require("sim_8051")
 require("py2lua")
 
+wxLua_path = "C:\\wx\\wxLua\\bin\\wxLua.exe"
+Python_path = "C:\\Python27\\python.exe"
+SDCC_path = "C:\\tools\\SDCC\\bin\\sdcc.exe"
+NodeJS_path = "C:\\tools\\nw\\nw.exe"
+
 wx_key_str = [[
 wxArrayString  
 wxComboBox 
@@ -169,6 +174,8 @@ function dprint(v0, v1, v2, v3, v4, v5, v6)
     MyApp.m_debug_info:AppendText(s);
 end
 
+dlog = dprint
+
 function log(v0, v1, v2, v3, v4, v5, v6)    
     local s = arg_str(v0, v1, v2, v3, v4, v5, v6)
     print(s)
@@ -286,7 +293,7 @@ function c_doc_init(doc)
         local output = file:read('*all')
         file:close()
         print("file close")
-        log("["..tostring(output).."]") 
+        dprint("["..tostring(output).."]") 
         print(output)     
     end
 
@@ -297,9 +304,9 @@ function c_doc_init(doc)
         -- do the compilation
         local path = get_path(filename, "\\")
         --log(path)
-        local cmd = "cd "..path.." && C:\\tools\\SDCC\\bin\\SDCC.exe --debug "..filename.." 2>&1"
+        local cmd = "cd "..path.." && "..SDCC_path.." --debug "..filename.." 2>&1"
         --local cmd = "C:/tools/SDCC/bin/SDCC.exe 2>&1"
-        log(cmd)
+        dprint(cmd)
         local result = exec_cmd_get_stdout_stderr(cmd)
         print("cmd done")
         return true -- return true if it compiled ok
@@ -417,6 +424,7 @@ function python_doc_init(doc)
     end
 
     function python_doc:precompile()
+        dlog("python not support compile yet, please select Run")
     end
     
     function python_doc:get_func_list(tree)
@@ -487,23 +495,23 @@ function lua_doc_init(doc)
     function lua:precompile()
         local doc = lua.doc --MyApp.get_current_doc()
 
-        log("lua_precompile")
+        dlog("lua_precompile")
         -- do the compilation
         local ret, errMsg, line_num = wxlua.CompileLuaScript(doc:GetText(), doc.m_filepath)
 
         if line_num > -1 then
-            log("!!! Error at line :"..tostring(line_num).."\n"..errMsg.."\n\n")
+            dlog("!!! Error at line :"..tostring(line_num).."\n"..errMsg.."\n\n")
             doc:GotoLine(line_num-1)
             return false
         else
-            log("***  Compile pass!\n\n")
+            dlog("***  Compile pass!\n\n")
         end
 
         return true -- return true if it compiled ok
     end
 
     function lua:run_doc(filename)
-        local cmd = "C:\\wx\\wxLua\\bin\\wxLua.exe --nostdout /c "..filename
+        local cmd = wxLua_path.." --nostdout /c "..filename
         dprint(cmd)
         os.execute(cmd)  -- /c with console
     end
@@ -643,12 +651,12 @@ function MyDebugNB:create(parent, frame)
                                 - wxaui.wxAUI_NB_CLOSE_ON_ACTIVE_TAB);
 
 
-    --local text = wx.wxTextCtrl(ctrl, wx.wxID_ANY, "",
-    --                      wx.wxDefaultPosition, wx.wxDefaultSize,
-    --                      wx.wxTE_READONLY + wx.wxTE_MULTILINE + wx.wxTE_RICH )
-    local text = wxstc.wxStyledTextCtrl(ctrl, wx.wxID_ANY,
-                                      wx.wxDefaultPosition, wx.wxDefaultSize,
-                                      wx.wxSUNKEN_BORDER)
+    local text = wx.wxTextCtrl(ctrl, wx.wxID_ANY, "",
+                          wx.wxDefaultPosition, wx.wxDefaultSize,
+                          wx.wxTE_READONLY + wx.wxTE_MULTILINE + wx.wxTE_RICH )
+    --local text = wxstc.wxStyledTextCtrl(ctrl, wx.wxID_ANY,
+    --                                  wx.wxDefaultPosition, wx.wxDefaultSize,
+    --                                  wx.wxSUNKEN_BORDER)
 
     parent.m_debug_info = text    
     
@@ -1065,8 +1073,16 @@ function MyDoc(parent, panel, id, filepath)
         local exe
         local path = self.m_filepath
         local ext = self.m_file_ext
-        
-        dprint("$clear$")        
+
+        dprint("$clear$")  
+        if (ext == "c") then
+            self:precompile()
+            return
+        elseif (ext == "ihx") then
+            ihx_doc:run_doc(path)
+            return
+        end
+              
         self:save_file()
 
         if (ext == "lua") then
@@ -1074,16 +1090,17 @@ function MyDoc(parent, panel, id, filepath)
                 log("fail")
                 return
             end
-            exe = "C:\\wx\\wxLua\\bin\\wxLua.exe --nostdout /c "   -- /c with console        
-            --exe = "C:\\wx\\wxLua\\bin\\wxLua.exe "
+            exe = wxLua_path.." --nostdout /c "   -- /c with console        
             --f = loadfile(path)
             --f()
             --return
         elseif (ext == "py") then
-            exe = "C:\\Python27\\python.exe "        
+            exe = Python_path        
         elseif (ext == "js") then
             --exe = "C:\\wx\\wxjs\\bin\\wxjs.exe"  
-            exe = "C:\\js\\node-webkit-v0.8.0-rc1-win-ia32\\nw.exe"
+            exe = NodeJS_path
+        elseif (ext == "c") then
+            exe = SDCC_path
         end
         local cmd = exe.." "..path
         dprint(cmd)
@@ -1728,7 +1745,7 @@ end
 function MyDbg:create(parent, menubar)
     self.m_menu = wx.wxMenu{
         { ID_RUN,       "Run\tF6",           "Run test" },
-        { ID_COMPILE,   "Check syntax",  "Precompile to check syntax" },
+        { ID_COMPILE,   "Compile",  "Lua:Precompile to check syntax, C:Compile" },
         { },
         { ID_DBG_START,     "Debug run\tF5",   "Run at debugger mode" },        
         { ID_DBG_STEP,      "Step\tF11",   "Next step from current line of debugger mode" },
