@@ -181,10 +181,10 @@ function py2lua_file(fn_in, fn_out)
     file.write(fn_out, s)    
 end
 
-fn_in = "C:\\work\\test_wxlua\\noname.py";
-fn_out = "C:\\work\\test_wxlua\\noname.lua";
+--fn_in = "C:\\work\\test_wxlua\\noname.py";
+--fn_out = "C:\\work\\test_wxlua\\noname.lua";
 
 
-py2lua_file(fn_in, fn_out)
+--py2lua_file(fn_in, fn_out)
 
 
