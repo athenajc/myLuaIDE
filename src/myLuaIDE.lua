@@ -33,57 +33,73 @@ local _ = function(s) return s end
 frame = nil
 
 -- File menu
-ID_NEW              = wx.wxID_NEW
-ID_OPEN             = wx.wxID_OPEN
-ID_CLOSE            = wx.wxNewId()
-ID_SAVE             = wx.wxID_SAVE
-ID_SAVEAS           = wx.wxID_SAVEAS 
-ID_SAVEALL          = wx.wxNewId()
-ID_EXIT             = wx.wxID_EXIT
+id = {
+    ANY              = wx.wxID_ANY,
+    NEW_FILE              = wx.wxID_NEW,
+    OPEN             = wx.wxID_OPEN,
+    CLOSE            = wx.wxNewId(),
+    SAVE             = wx.wxID_SAVE,
+    SAVEAS           = wx.wxID_SAVEAS,
+    SAVEALL          = wx.wxNewId(),
+    EXIT             = wx.wxID_EXIT,
 
--- Edit menu
-ID_UNDO             = wx.wxID_UNDO
-ID_REDO             = wx.wxID_REDO
-ID_CUT              = wx.wxID_CUT
-ID_COPY             = wx.wxID_COPY
-ID_PASTE            = wx.wxID_PASTE
-ID_SELECTALL        = wx.wxID_SELECTALL
-ID_AUTOCOMPLETE     = wx.wxNewId()
-ID_AUTOCOMPLETE_ENABLE = wx.wxNewId()
-ID_COMMENT          = wx.wxNewId()
-ID_FOLD             = wx.wxNewId()
+    -- Edit menu
+    UNDO             = wx.wxID_UNDO,
+    REDO             = wx.wxID_REDO,
+    CUT              = wx.wxID_CUT,
+    COPY             = wx.wxID_COPY,
+    PASTE            = wx.wxID_PASTE,
+    SELECTALL        = wx.wxID_SELECTALL,
+    AUTOCOMPLETE     = wx.wxNewId(),
+    AUTOCOMPLETE_ENABLE = wx.wxNewId(),
+    COMMENT          = wx.wxNewId(),
+    FOLD             = wx.wxNewId(),
 
--- Find menu
-ID_FIND             = wx.wxID_FIND
-ID_FINDNEXT         = wx.wxNewId()
-ID_FINDPREV         = wx.wxNewId()
-ID_REPLACE          = wx.wxNewId()
+    -- Find menu
+    FIND             = wx.wxID_FIND,
+    FINDNEXT         = wx.wxNewId(),
+    FINDPREV         = wx.wxNewId(),
+    REPLACE          = wx.wxNewId(),
 
--- Debug menu
-ID_COMPILE          = wx.wxNewId()
-ID_RUN              = wx.wxNewId()
-ID_DBG_START        = wx.wxNewId()
+    -- Debug menu
+    COMPILE          = wx.wxNewId(),
+    RUN              = wx.wxNewId(),
+    DBG_START        = wx.wxNewId(),
 
-ID_DBG_STOP         = wx.wxNewId()
-ID_DBG_STEP         = wx.wxNewId()
-ID_DBG_STEP_OVER    = wx.wxNewId()
-ID_DBG_STEP_OUT     = wx.wxNewId()
-ID_DBG_CONTINUE     = wx.wxNewId()
-ID_DBG_BREAK        = wx.wxNewId()
+    DBG_STOP         = wx.wxNewId(),
+    DBG_STEP         = wx.wxNewId(),
+    DBG_STEP_OVER    = wx.wxNewId(),
+    DBG_STEP_OUT     = wx.wxNewId(),
+    DBG_CONTINUE     = wx.wxNewId(),
+    DBG_BREAK        = wx.wxNewId(),
 
-ID_TOGGLEBREAKPOINT = wx.wxNewId()
-ID_VIEWCALLSTACK    = wx.wxNewId()
-ID_VIEWWATCHWINDOW  = wx.wxNewId()
+    TOGGLEBREAKPOINT = wx.wxNewId(),
+    VIEWCALLSTACK    = wx.wxNewId(),
+    VIEWWATCHWINDOW  = wx.wxNewId(),
 
--- Help menu
-ID_ABOUT            = wx.wxID_ABOUT
+    -- Help menu
+    ABOUT            = wx.wxID_ABOUT,
 
--- Watch window menu items
-ID_WATCH_LISTCTRL   = wx.wxNewId()
-ID_ADDWATCH         = wx.wxNewId()
-ID_EDITWATCH        = wx.wxNewId()
-ID_REMOVEWATCH      = wx.wxNewId()
-ID_EVALUATEWATCH    = wx.wxNewId()
+    -- Watch window menu items
+    WATCH_LISTCTRL   = wx.wxNewId(),
+    ADDWATCH         = wx.wxNewId(),
+    EDITWATCH        = wx.wxNewId(),
+    REMOVEWATCH      = wx.wxNewId(),
+    EVALUATEWATCH    = wx.wxNewId(),
+
+    CreateTree = wx.wxNewId(),
+    create_grid = wx.wxNewId(),
+    CreateText = wx.wxNewId(),
+    CreateNotebook = wx.wxNewId(),    
+}
+
+function id.new(name) 
+    if id[name] == nil then
+        id[name] = wx.wxNewId()        
+    end
+    return id[name]
+end
+
 
 -- Markers for editor marker margin
 MARKNUM_BREAK_POINT   = 1
@@ -97,10 +113,7 @@ MyLogNB = {}
 MyDbg = {}
 
 MyApp = {
-    ID_CreateTree = wx.wxNewId(),
-    ID_create_grid = wx.wxNewId(),
-    ID_CreateText = wx.wxNewId(),
-    ID_CreateNotebook = wx.wxNewId(),    
+
     
     m_frame = nil,
     m_mgr = nil,
@@ -640,7 +653,7 @@ function lua_doc_init(doc)
 end
 
 function MyDebugNB:create(parent, frame)
-    local self = wxaui.wxAuiNotebook(frame, wx.wxID_ANY,
+    local self = wxaui.wxAuiNotebook(frame, id.ANY,
                                 wx.wxDefaultPosition, wx.wxDefaultSize,
                                 wxaui.wxAUI_NB_DEFAULT_STYLE + wxaui.wxAUI_NB_TAB_EXTERNAL_MOVE + wx.wxNO_BORDER 
                                 - wxaui.wxAUI_NB_CLOSE_ON_ACTIVE_TAB);
@@ -665,7 +678,7 @@ function MyDebugNB:create(parent, frame)
         self.list:DeleteAllItems()
     end
 
-    self.list = wx.wxListCtrl( self, wx.wxID_ANY, wx.wxDefaultPosition, wx.wxDefaultSize, wx.wxLC_REPORT+wx.wxBORDER_NONE)
+    self.list = wx.wxListCtrl( self, id.ANY, wx.wxDefaultPosition, wx.wxDefaultSize, wx.wxLC_REPORT+wx.wxBORDER_NONE)
   	    
     self.list:InsertColumn(0, "Time", wx.wxLIST_FORMAT_RIGHT)
     self.list:InsertColumn(1, "Event")
@@ -682,13 +695,13 @@ function MyDebugNB:create(parent, frame)
 end
 
 function MyLogNB:create(parent, frame)
-    local ctrl = wxaui.wxAuiNotebook(frame, wx.wxID_ANY,
+    local ctrl = wxaui.wxAuiNotebook(frame, id.ANY,
                                 wx.wxPoint(0, 800), --wx.wxPoint(client_size.x, client_size.y),
                                 wx.wxSize(200,160),
                                 wxaui.wxAUI_NB_DEFAULT_STYLE + wxaui.wxAUI_NB_TAB_EXTERNAL_MOVE + wx.wxNO_BORDER 
                                 - wxaui.wxAUI_NB_CLOSE_ON_ACTIVE_TAB);   
 
-    parent.m_logger = wx.wxTextCtrl(ctrl, wx.wxID_ANY, "",
+    parent.m_logger = wx.wxTextCtrl(ctrl, id.ANY, "",
                           wx.wxDefaultPosition, wx.wxSize(-1, -1),
                           wx.wxTE_READONLY + wx.wxTE_MULTILINE )    
     
@@ -699,9 +712,11 @@ end
 
 function MyFileDropTarget(window)
     local self = wx.wxLuaFileDropTarget()
+print("MyFileDropTarget", self)
     self.window = window
 
     function self.OnDropFiles(self, x, y, filenames)
+print("self.window:DropFiles")
         self.window:DropFiles(x, y, filenames)
         return true
     end
@@ -949,7 +964,7 @@ function MyDoc(parent, panel, id, filepath)
     local self = wxstc.wxStyledTextCtrl(panel, id,
                                       wx.wxDefaultPosition, wx.wxDefaultSize,
                                       wx.wxSUNKEN_BORDER)
-    --print(filepath)
+    print("MyDoc", self, filepath)
     self.m_id = id;
     self.m_filepath = filepath;
     self.m_filename = get_filename(filepath)
@@ -1155,7 +1170,8 @@ function MyDoc(parent, panel, id, filepath)
     end
 
     function self:ask_if_save(msg) 
-        local result = wx.wxMessageBox(self.m_filepath.." is modified. Do you want to save?", msg, wx.wxYES_NO)
+        local result = wx.wxMessageBox(self.m_filepath.." is modified. Do you want to save?", msg, wx.wxYES_NO+wx.wxCANCEL)
+        log("ask_if_save", result)
         if (result == 2) then -- Yes == 2, No == 8
             self:save_file()
             return wx.wxID_YES
@@ -1210,6 +1226,9 @@ function MyDoc(parent, panel, id, filepath)
 
     function self.OnDocModified(event)      
         self.m_modified = self:GetModify()
+        if (self.m_modified) then 
+            MyApp.m_doc_modified = true
+        end
     end
 
     function self.OnDocKeyPressed(event)
@@ -1237,10 +1256,11 @@ function MyDoc(parent, panel, id, filepath)
     self:Connect(wxstc.wxEVT_STC_CHARADDED, self.OnDocKeyPressed)
     self:Connect(wxstc.wxEVT_STC_MARGINCLICK, self.OnDocMarginClick)
 
-    local dt = MyFileDropTarget(self)
-    self:SetDropTarget(dt)
+    self.dt = MyFileDropTarget(self)
+    self:SetDropTarget(self.dt)
 
     function self.DropFiles(self, x, y, filenames)
+print("Dropfile")
         if (#filenames >= 1) then
             filename = filenames[1]
             MyApp:open_file(filename)
@@ -1251,7 +1271,7 @@ function MyDoc(parent, panel, id, filepath)
 end
 
 function MyDocNB:create(parent, frame)
-    self = wxaui.wxAuiNotebook(frame, wx.wxID_ANY,
+    self = wxaui.wxAuiNotebook(frame, id.ANY,
                                     wx.wxDefaultPosition,
                                     wx.wxDefaultSize,
                                     wxaui.wxAUI_NB_DEFAULT_STYLE + wxaui.wxAUI_NB_TAB_EXTERNAL_MOVE + 
@@ -1358,7 +1378,7 @@ function MyDocNB:create(parent, frame)
     end
 
     function self.create_html_ctrl(parent)
-        local html = wx.wxHtmlWindow(parent, wx.wxID_ANY,
+        local html = wx.wxHtmlWindow(parent, id.ANY,
                                        wx.wxDefaultPosition,
                                        wx.wxSize(400,300));
         local html_text = [[
@@ -1462,12 +1482,13 @@ function MyDocNB:create(parent, frame)
     end
 
     function self:save_on_exit(event)  
-        --log("save_on_exit")
+        print(self, "save_on_exit")
         for path_key, doc in pairs(self.m_docs) do
-            --print(path_key, doc)
+            print(path_key, doc)
             if (doc ~= nil) then        
                 self:check_doc(doc)
-                if (doc["m_modified"]) then           
+                print("doc.m_modified", doc.m_modified)
+                if (doc.m_modified) then           
                     return doc:ask_if_save("Save on exit")          
                 end
             end
@@ -1753,14 +1774,14 @@ end
 
 function MyDbg:create(parent, menubar)
     self.m_menu = wx.wxMenu{
-        { ID_RUN,       "Run\tF6",           "Run test" },
-        { ID_COMPILE,   "Compile",  "Lua:Precompile to check syntax, C:Compile" },
+        { id.RUN,       "Run\tF6",           "Run test" },
+        { id.COMPILE,   "Compile",  "Lua:Precompile to check syntax, C:Compile" },
         { },
-        { ID_DBG_START,     "Debug run\tF5",   "Run at debugger mode" },        
-        { ID_DBG_STEP,      "Step\tF11",   "Next step from current line of debugger mode" },
-        { ID_DBG_STEP_OVER, "Step Over",   "Next step, bypass function" },
-        { ID_DBG_STEP_OUT,  "Step Out",    "Step out of current function" },
-        { ID_DBG_STOP,      "Stop Debug",  "Stop and destroy debugger" },
+        { id.DBG_START,     "Debug run\tF5",   "Run at debugger mode" },        
+        { id.DBG_STEP,      "Step\tF11",   "Next step from current line of debugger mode" },
+        { id.DBG_STEP_OVER, "Step Over",   "Next step, bypass function" },
+        { id.DBG_STEP_OUT,  "Step Out",    "Step out of current function" },
+        { id.DBG_STOP,      "Stop Debug",  "Stop and destroy debugger" },
     }
                 
     menubar:Append(self.m_menu, "&Debug")
@@ -1854,35 +1875,35 @@ function MyDbg:create(parent, menubar)
         end
     end
 
-    parent:Connect(ID_RUN,           wx.wxEVT_COMMAND_MENU_SELECTED, self.OnRun);
-    parent:Connect(ID_COMPILE,       wx.wxEVT_COMMAND_MENU_SELECTED, self.OnCompile);
-    parent:Connect(ID_DBG_START,     wx.wxEVT_COMMAND_MENU_SELECTED, self.OnStartDebug);
-    parent:Connect(ID_DBG_STEP,      wx.wxEVT_COMMAND_MENU_SELECTED, self.OnStep);
-    parent:Connect(ID_DBG_STEP_OVER, wx.wxEVT_COMMAND_MENU_SELECTED, self.OnStepOver);
-    parent:Connect(ID_DBG_STEP_OUT,  wx.wxEVT_COMMAND_MENU_SELECTED, self.OnStepOut);
-    parent:Connect(ID_DBG_STOP,      wx.wxEVT_COMMAND_MENU_SELECTED, self.OnStopDebug);
+    parent:Connect(id.RUN,           wx.wxEVT_COMMAND_MENU_SELECTED, self.OnRun);
+    parent:Connect(id.COMPILE,       wx.wxEVT_COMMAND_MENU_SELECTED, self.OnCompile);
+    parent:Connect(id.DBG_START,     wx.wxEVT_COMMAND_MENU_SELECTED, self.OnStartDebug);
+    parent:Connect(id.DBG_STEP,      wx.wxEVT_COMMAND_MENU_SELECTED, self.OnStep);
+    parent:Connect(id.DBG_STEP_OVER, wx.wxEVT_COMMAND_MENU_SELECTED, self.OnStepOver);
+    parent:Connect(id.DBG_STEP_OUT,  wx.wxEVT_COMMAND_MENU_SELECTED, self.OnStepOut);
+    parent:Connect(id.DBG_STOP,      wx.wxEVT_COMMAND_MENU_SELECTED, self.OnStopDebug);
 
     return self
 end
 
 function MyEditMenu(parent, menubar)
-    local ID_PY2LUA = wx.wxNewId()
+
     local self = wx.wxMenu{
-        { ID_UNDO,      "&Undo\tCtrl-Z",       "Undo the editing" },
-        { ID_REDO,      "&Redo\tCtrl-Y",       "Redo the undo editing" },
+        { id.UNDO,      "&Undo\tCtrl-Z",       "Undo the editing" },
+        { id.REDO,      "&Redo\tCtrl-Y",       "Redo the undo editing" },
         { },    
-        { ID_CUT,       "Cu&t\tCtrl-X",        "Cut selected text to clipboard" },
-        { ID_COPY,      "&Copy\tCtrl-C",       "Copy selected text to the clipboard" },
-        { ID_PASTE,     "&Paste\tCtrl-V",      "Paste text from clipboard" },
-        { ID_SELECTALL, "Select A&ll\tCtrl-A", "Select all text" },
+        { id.CUT,       "Cu&t\tCtrl-X",        "Cut selected text to clipboard" },
+        { id.COPY,      "&Copy\tCtrl-C",       "Copy selected text to the clipboard" },
+        { id.PASTE,     "&Paste\tCtrl-V",      "Paste text from clipboard" },
+        { id.SELECTALL, "Select A&ll\tCtrl-A", "Select all text" },
         { },
-        { ID_FIND,      "&Find\tCtrl-F",      "Find string" },
-        { ID_FINDNEXT,  "Find Next\tF3",      "Find next match string" },
-        { ID_REPLACE,   "Replace\tCtrl-H",    "Replace string" },
+        { id.FIND,      "&Find\tCtrl-F",      "Find string" },
+        { id.FINDNEXT,  "Find Next\tF3",      "Find next match string" },
+        { id.REPLACE,   "Replace\tCtrl-H",    "Replace string" },
         { },
-        { ID_FOLD,      "&Fold/Expand all\tF12", "Fold or Expand all code folds"},
+        { id.FOLD,      "&Fold/Expand all\tF12", "Fold or Expand all code folds"},
         {},
-        { ID_PY2LUA,    "Python to Lua",         "Convert python to lua"} 
+        { id.new("PY2LUA"),    "Python to Lua",         "Convert python to lua"} 
     }
                 
     menubar:Append(self, "&Edit")
@@ -2145,37 +2166,37 @@ function MyEditMenu(parent, menubar)
         doc:SetText(s)
     end
 
-    parent:Connect(ID_UNDO,  wx.wxEVT_COMMAND_MENU_SELECTED, self.OnUndo)
-    parent:Connect(ID_REDO,  wx.wxEVT_COMMAND_MENU_SELECTED, self.OnRedo)    
-    parent:Connect(ID_CUT,   wx.wxEVT_COMMAND_MENU_SELECTED, self.OnCut)
-    parent:Connect(ID_COPY,  wx.wxEVT_COMMAND_MENU_SELECTED, self.OnCopy)
-    parent:Connect(ID_PASTE, wx.wxEVT_COMMAND_MENU_SELECTED, self.OnPaste)
+    parent:Connect(id.UNDO,  wx.wxEVT_COMMAND_MENU_SELECTED, self.OnUndo)
+    parent:Connect(id.REDO,  wx.wxEVT_COMMAND_MENU_SELECTED, self.OnRedo)    
+    parent:Connect(id.CUT,   wx.wxEVT_COMMAND_MENU_SELECTED, self.OnCut)
+    parent:Connect(id.COPY,  wx.wxEVT_COMMAND_MENU_SELECTED, self.OnCopy)
+    parent:Connect(id.PASTE, wx.wxEVT_COMMAND_MENU_SELECTED, self.OnPaste)
     
-    parent:Connect(ID_SELECTALL, wx.wxEVT_COMMAND_MENU_SELECTED, self.OnSelectAll)
+    parent:Connect(id.SELECTALL, wx.wxEVT_COMMAND_MENU_SELECTED, self.OnSelectAll)
         
-    parent:Connect(ID_FIND,  wx.wxEVT_COMMAND_MENU_SELECTED, self.OnShowFind)
-    parent:Connect(ID_REPLACE, wx.wxEVT_COMMAND_MENU_SELECTED, self.OnShowReplace)
-    parent:Connect(ID_FINDNEXT,  wx.wxEVT_COMMAND_MENU_SELECTED, self.OnFindNext)
+    parent:Connect(id.FIND,  wx.wxEVT_COMMAND_MENU_SELECTED, self.OnShowFind)
+    parent:Connect(id.REPLACE, wx.wxEVT_COMMAND_MENU_SELECTED, self.OnShowReplace)
+    parent:Connect(id.FINDNEXT,  wx.wxEVT_COMMAND_MENU_SELECTED, self.OnFindNext)
 
-    parent:Connect(ID_PY2LUA,  wx.wxEVT_COMMAND_MENU_SELECTED, self.OnPy2Lua)
+    parent:Connect(id.PY2LUA,  wx.wxEVT_COMMAND_MENU_SELECTED, self.OnPy2Lua)
     return self
 end
 
 function MyFileMenu(parent, menubar)
     local self = wx.wxMenu({
-            { ID_NEW_PRJ,     "New Project",   "Create a project" },
-            { ID_OPEN_PRJ,    "Open Project",  "Open an existing project" },
-            { ID_CLOSE_PRJ,   "Close project", "Close the current project" },
+            { id.NEW_PRJ,     "New Project",   "Create a project" },
+            { id.OPEN_PRJ,    "Open Project",  "Open an existing project" },
+            { id.CLOSE_PRJ,   "Close project", "Close the current project" },
             { },
-            { ID_NEW,     "&New\tCtrl-N",        "Create an empty file" },
-            { ID_OPEN,    "&Open...\tCtrl-O",    "Open an existing file" },
-            { ID_CLOSE,   "&Close file\tCtrl+W", "Close the current file" },
+            { id.NEW_FILE,     "&New\tCtrl-N",        "Create an empty file" },
+            { id.OPEN,    "&Open...\tCtrl-O",    "Open an existing file" },
+            { id.CLOSE,   "&Close file\tCtrl+W", "Close the current file" },
             { },
-            { ID_SAVE,    "&Save\tCtrl-S",       "Save the current document" },
-            { ID_SAVEAS,  "Save &As...\tAlt-S",  "Save the current document to a file with a new name" },
-            { ID_SAVEALL, "Save A&ll...\tCtrl-Shift-S", "Save all open documents" },
+            { id.SAVE,    "&Save\tCtrl-S",       "Save the current document" },
+            { id.SAVEAS,  "Save &As...\tAlt-S",  "Save the current document to a file with a new name" },
+            { id.SAVEALL, "Save A&ll...\tCtrl-Shift-S", "Save all open documents" },
             { },
-            { ID_EXIT,    "E&xit\tAlt-X",        "Exit Program" }})
+            { id.EXIT,    "E&xit\tAlt-X",        "Exit Program" }})
             
     menubar:Append(self, "&File")  
 
@@ -2281,14 +2302,28 @@ function MyFileMenu(parent, menubar)
         MyApp.m_frame:Close()
     end
 
-    parent:Connect(ID_NEW,    wx.wxEVT_COMMAND_MENU_SELECTED, self.OnNewFile);
-    parent:Connect(ID_OPEN,   wx.wxEVT_COMMAND_MENU_SELECTED, self.OnOpenFile);
-    parent:Connect(ID_SAVE,   wx.wxEVT_COMMAND_MENU_SELECTED, self.OnSaveFile);
-    parent:Connect(ID_SAVEAS, wx.wxEVT_COMMAND_MENU_SELECTED, self.OnSaveAsFile);
-    parent:Connect(ID_SAVEALL,wx.wxEVT_COMMAND_MENU_SELECTED, self.OnSaveAllFile);
-    parent:Connect(ID_EXIT,   wx.wxEVT_COMMAND_MENU_SELECTED, self.OnExit);
+    parent:Connect(id.NEW_FILE,wx.wxEVT_COMMAND_MENU_SELECTED, self.OnNewFile);
+    parent:Connect(id.OPEN,    wx.wxEVT_COMMAND_MENU_SELECTED, self.OnOpenFile);
+    parent:Connect(id.SAVE,    wx.wxEVT_COMMAND_MENU_SELECTED, self.OnSaveFile);
+    parent:Connect(id.SAVEAS,  wx.wxEVT_COMMAND_MENU_SELECTED, self.OnSaveAsFile);
+    parent:Connect(id.SAVEALL, wx.wxEVT_COMMAND_MENU_SELECTED, self.OnSaveAllFile);
+    parent:Connect(id.EXIT,    wx.wxEVT_COMMAND_MENU_SELECTED, self.OnExit);
 
     return self
+end
+
+function MySettingMenu(parent, menubar)
+    local menu = wx.wxMenu(); 
+    menu:Append(id.new("SETTINGS"), "Compiler");
+    menubar:Append(menu, "Settings");        
+    
+    function OnSettingCompiler(event)
+        wx.wxMessageBox(_("wxLua IDE."), _("About wxIDE"), wx.wxOK, MyApp.m_frame);
+    end
+
+    parent:Connect(id.SETTINGS, wx.wxEVT_COMMAND_MENU_SELECTED, OnSettingCompiler);
+
+    return menu
 end
 
 function MyHelpMenu(parent, menubar)
@@ -2300,7 +2335,7 @@ function MyHelpMenu(parent, menubar)
         wx.wxMessageBox(_("wxLua IDE."), _("About wxIDE"), wx.wxOK, MyApp.m_frame);
     end
 
-    parent:Connect(ID_ABOUT, wx.wxEVT_COMMAND_MENU_SELECTED, OnAbout);
+    parent:Connect(id.ABOUT, wx.wxEVT_COMMAND_MENU_SELECTED, OnAbout);
 
     return help_menu
 end
@@ -2309,14 +2344,14 @@ end
 function MyPrj:create(parent, frame)
 
     
-    local notebook = wxaui.wxAuiNotebook(frame, wx.wxID_ANY,
+    local notebook = wxaui.wxAuiNotebook(frame, id.ANY,
                                 wx.wxPoint(0, 0), --wx.wxPoint(client_size.x, client_size.y),
                                 wx.wxSize(400,400),
                                 wxaui.wxAUI_NB_DEFAULT_STYLE + wxaui.wxAUI_NB_TAB_EXTERNAL_MOVE + wx.wxNO_BORDER 
                                 - wxaui.wxAUI_NB_CLOSE_ON_ACTIVE_TAB);
     
     function add_search_box(panel, tree)
-        local self = wx.wxComboBox(panel, wx.wxID_ANY, "",
+        local self = wx.wxComboBox(panel, id.ANY, "",
                                              wx.wxDefaultPosition, wx.wxDefaultSize,
                                              {},
                                              wx.wxTE_PROCESS_ENTER) -- generates event when enter is pressed
@@ -2439,7 +2474,7 @@ function MyPrj:create(parent, frame)
     -- ---------------------------------------------------------------------------------------------
     function self:create_project_tree(parent)
 
-        local prj_tree = wx.wxTreeCtrl(parent, wx.wxID_ANY,
+        local prj_tree = wx.wxTreeCtrl(parent, id.ANY,
                                           wx.wxDefaultPosition, wx.wxDefaultSize,
                                           wx.wxTR_DEFAULT_STYLE + wx.wxNO_BORDER);
 
@@ -2473,7 +2508,7 @@ function MyPrj:create(parent, frame)
     end
     -- ---------------------------------------------------------------------------------------------
     function self:create_dir_tree(parent)
-        local dir_tree = wx.wxGenericDirCtrl(parent,  wx.wxID_ANY, wx.wxDirDialogDefaultFolderStr,
+        local dir_tree = wx.wxGenericDirCtrl(parent,  id.ANY, wx.wxDirDialogDefaultFolderStr,
                             wx.wxDefaultPosition, wx.wxDefaultSize)
         dir_tree:SetPath("C:\\work\\test_wxlua\\")
 
@@ -2494,27 +2529,26 @@ function MyPrj:create(parent, frame)
     -- ---------------------------------------------------------------------------------------------
     function self:create_function_tree(parent, notebook)
         local frame = notebook        
-        local panel = wx.wxPanel(frame, wx.wxID_ANY)
+        local panel = wx.wxPanel(frame, id.ANY)
 
         local sizer = wx.wxFlexGridSizer(2, 0, 0, 0)
         sizer:AddGrowableCol(0)
         sizer:AddGrowableRow(1)
 
         -- create our treectrl
-        local func_tree = wx.wxTreeCtrl(panel, wx.wxID_ANY,
+        local func_tree = wx.wxTreeCtrl(panel, id.ANY,
                                   wx.wxDefaultPosition, wx.wxDefaultSize,
                                   wx.wxTR_LINES_AT_ROOT + wx.wxTR_HAS_BUTTONS )
         local tree = func_tree
         local search_box = add_search_box(panel, func_tree)
         func_tree.m_search_box = search_box
-        --local box_caption = wx.wxStaticBox( panel, wx.wxID_ANY, "Search function")
+        --local box_caption = wx.wxStaticBox( panel, id.ANY, "Search function")
         --local sizer1 = wx.wxStaticBoxSizer( box_caption, wx.wxVERTICAL );
         local sizer2 = wx.wxFlexGridSizer(0, 2, 0, 0)
         sizer2:AddGrowableCol(1)
         sizer2:AddGrowableRow(0)
 
-        local ID_CLEAR_BUTTON = wx.wxNewId()
-        local b1 = wx.wxButton(panel, ID_CLEAR_BUTTON, "<", wx.wxDefaultPosition, wx.wxSize(28, 28))
+         local b1 = wx.wxButton(panel, id.new("CLEAR_BUTTON"), "<", wx.wxDefaultPosition, wx.wxSize(28, 28))
          
         sizer2:Add(b1, 0, wx.wxALIGN_CENTER_VERTICAL+wx.wxALL, 0)
         sizer2:Add(search_box, 0, wx.wxGROW+wx.wxALIGN_LEFT+wx.wxALL, 1)
@@ -2598,7 +2632,7 @@ function MyPrj:create(parent, frame)
         end
 
         func_tree:Connect(wx.wxEVT_COMMAND_TREE_ITEM_ACTIVATED, func_tree.OnSelectFunction)
-        frame:Connect(ID_CLEAR_BUTTON, wx.wxEVT_COMMAND_BUTTON_CLICKED,
+        frame:Connect(id.CLEAR_BUTTON, wx.wxEVT_COMMAND_BUTTON_CLICKED,
             function (event) search_box:clear_text() end )
     
         return func_tree
@@ -2637,7 +2671,7 @@ end
 function MyToolBar(parent, aui_mgr)    
     local self = {}
     local function add_tools(parent, name, lst)
-        local tb = wx.wxToolBar(parent, wx.wxID_ANY, wx.wxDefaultPosition, wx.wxDefaultSize, wx.wxTB_FLAT + wx.wxTB_NODIVIDER)
+        local tb = wx.wxToolBar(parent, id.ANY, wx.wxDefaultPosition, wx.wxDefaultSize, wx.wxTB_FLAT + wx.wxTB_NODIVIDER)
         tb:SetToolBitmapSize(wx.wxSize(16,16));
         tb.control = {}
 
@@ -2646,7 +2680,7 @@ function MyToolBar(parent, aui_mgr)
             if #t == 0 then
                 tb:AddSeparator()
             elseif t[1] == "ComboBox" then
-                tb:AddControl(wx.wxStaticText(tb, wx.wxID_ANY, t[3]))
+                tb:AddControl(wx.wxStaticText(tb, id.ANY, t[3]))
                 local cb = wx.wxComboBox(tb, t[2], t[3], t[4], t[5], t[6], t[7] )
                 tb:AddControl(cb)
                 table.insert(tb.control, cb)
@@ -2661,41 +2695,42 @@ function MyToolBar(parent, aui_mgr)
                       Name(wxT(name)):
                       ToolbarPane():Top():
                       LeftDockable(false):RightDockable(false));
+        table.insert(self, tb)
         return tb
     end
 
     local tb1_lst = {
-        {ID_NEW,     "New",      wx.wxART_NORMAL_FILE, "Create an empty document"},
-        {ID_OPEN,    "Open",     wx.wxART_FILE_OPEN,   "Open an existing document"},
-        {ID_SAVE,    "Save",     wx.wxART_FILE_SAVE,   "Save the current document"},
-        {ID_SAVEALL, "Save All", wx.wxART_NEW_DIR,     "Save all documents"},
+        {id.NEW_FILE,"New",      wx.wxART_NORMAL_FILE, "Create an empty document"},
+        {id.OPEN,    "Open",     wx.wxART_FILE_OPEN,   "Open an existing document"},
+        {id.SAVE,    "Save",     wx.wxART_FILE_SAVE,   "Save the current document"},
+        {id.SAVEALL, "Save All", wx.wxART_NEW_DIR,     "Save all documents"},
         {},
-        {ID_CUT,     "Cut",      wx.wxART_CUT,         "Cut the selection"},
-        {ID_COPY,    "Copy",     wx.wxART_COPY,        "Copy the selection"},
-        {ID_PASTE,   "Paste",    wx.wxART_PASTE,       "Paste text from the clipboard"},
+        {id.CUT,     "Cut",      wx.wxART_CUT,         "Cut the selection"},
+        {id.COPY,    "Copy",     wx.wxART_COPY,        "Copy the selection"},
+        {id.PASTE,   "Paste",    wx.wxART_PASTE,       "Paste text from the clipboard"},
         {},
-        {ID_UNDO,    "Undo",     wx.wxART_UNDO,        "Undo last edit"},
-        {ID_REDO,    "Redo",     wx.wxART_REDO,        "Redo last undo"},
+        {id.UNDO,    "Undo",     wx.wxART_UNDO,        "Undo last edit"},
+        {id.REDO,    "Redo",     wx.wxART_REDO,        "Redo last undo"},
         {},
-        {ID_FIND,    "Find",     wx.wxART_FIND,        "Find string"},
-        {ID_REPLACE, "Replace",  wx.wxART_FIND_AND_REPLACE, "Find and replace string"},
+        {id.FIND,    "Find",     wx.wxART_FIND,        "Find string"},
+        {id.REPLACE, "Replace",  wx.wxART_FIND_AND_REPLACE, "Find and replace string"},
     }
     add_tools(parent, "Edit toolbar", tb1_lst)
 
     local tb2_lst = {
-        {ID_RUN,           "Run",        "images/run1.png",       "Build and Run"},
+        {id.RUN,           "Run",        "images/run1.png",       "Build and Run"},
         {},
-        {ID_DBG_START,     "Debug",      "images/dbgrun.png",     "Start Debug"},
-        {ID_DBG_STEP,      "Step",       "images/dbgstep.png",    "Next Step"},
-        {ID_DBG_STEP_OVER, "Step Over",  "images/dbgnext.png",    "Step over function"},
-        {ID_DBG_STEP_OUT,  "Step Out",   "images/dbgstepout.png", "Step out current function"},
-        {ID_DBG_STOP,      "Stop Debug", "images/dbgstop.png",    "Stop debugger"},
+        {id.DBG_START,     "Debug",      "images/dbgrun.png",     "Start Debug"},
+        {id.DBG_STEP,      "Step",       "images/dbgstep.png",    "Next Step"},
+        {id.DBG_STEP_OVER, "Step Over",  "images/dbgnext.png",    "Step over function"},
+        {id.DBG_STEP_OUT,  "Step Out",   "images/dbgstepout.png", "Step out current function"},
+        {id.DBG_STOP,      "Stop Debug", "images/dbgstop.png",    "Stop debugger"},
     }
 
     add_tools(parent, "debug toolbar", tb2_lst)
 
     local tb3_lst = {
-        {"ComboBox", wx.wxID_ANY, " Goto Line ", wx.wxPoint(0, 0), wx.wxSize(100, 16), {"100", "500", "1000", "1500", "2000", "2500", "3000"}, 0},
+        {"ComboBox", id.ANY, " Goto Line ", wx.wxPoint(0, 0), wx.wxSize(100, 16), {"100", "500", "1000", "1500", "2000", "2500", "3000"}, 0},
     }
     
     local tb3 = add_tools(parent, "", tb3_lst)
@@ -2753,7 +2788,7 @@ function MyFrame(parent)
 
     -- create the frame window
     local self = wx.wxFrame(wx.NULL,
-                        wx.wxID_ANY,
+                        id.ANY,
                         wxT("My Lua IDE - Athena"),
                         wx.wxPoint(200, 0),
                         wx.wxSize(1600, 1024));
@@ -2767,6 +2802,7 @@ function MyFrame(parent)
     MyFileMenu(self, menubar)
     MyEditMenu(self, menubar)
     MyApp.m_dbg = MyDbg:create(self, menubar)
+    MySettingMenu(self, menubar)
     MyHelpMenu(self, menubar)
 
     self:SetMenuBar(menubar)
@@ -2791,9 +2827,28 @@ function MyFrame(parent)
     end
 
     function self.OnClose(event)
+        print("OnClose, MyApp.m_doc_modified", MyApp.m_doc_modified)
         MyApp:save_config()
-        MyApp:save_on_exit(event)
+
+        if (MyApp.m_doc_modified) then
+            local ans = MyApp:save_on_exit(event)
+            if (ans == wx.wxID_CANCEL) then
+                return
+            elseif (ans == wx.wxID_NO or ans == wx.wxID_YES) then
+                self:Destroy()
+            else
+                if (not event:CanVeto()) then  -- Test if we can veto this deletion
+                    self:Destroy()
+                else
+                    event:Veto()  -- Notify the calling code that we didn't delete the frame.
+                end
+            end               
+        end
+
         -- ensure the event is skipped to allow the frame to close
+        --event:Skip()
+        print("event:skip()")
+        MyApp:OnExit(event)
         event:Skip()
     end
 
@@ -2808,6 +2863,8 @@ function MyApp:create(parent, id, title, pos, size, style)
     local frame = MyFrame(wx.NULL)
     local self = MyApp
     local app = self
+
+    self.m_doc_modified = false
     self.m_frame = frame   
 
     -- tell wxAuiManager to manage this frame
@@ -2820,17 +2877,19 @@ function MyApp:create(parent, id, title, pos, size, style)
                   
     self.m_doc_nb = MyDocNB:create(self, frame);
     self.m_prj_nb = MyPrj:create(self, frame);
-   
+    self.m_log_nb = MyLogNB:create(self, frame)
+    self.m_dbg_nb = MyDebugNB:create(self, frame)
+    
     self.m_mgr:AddPane(self.m_doc_nb, wxaui.wxAuiPaneInfo():Name(wxT("main_panel")):
                   CenterPane():PaneBorder(false));                  
 
-    self.m_mgr:AddPane(MyLogNB:create(self, frame), wxaui.wxAuiPaneInfo():Name(wxT("bottom_panel")):
+    self.m_mgr:AddPane(self.m_log_nb, wxaui.wxAuiPaneInfo():Name(wxT("bottom_panel")):
                   CenterPane():PaneBorder(false):CloseButton(false):Show());
 
     self.m_mgr:AddPane(self.m_prj_nb, wxaui.wxAuiPaneInfo():Name(wxT("left_panel")):
                   PaneBorder(false):CloseButton(false):Show());  
 
-    self.m_mgr:AddPane(MyDebugNB:create(self, frame), wxaui.wxAuiPaneInfo():Name(wxT("debug_panel")):
+    self.m_mgr:AddPane(self.m_dbg_nb, wxaui.wxAuiPaneInfo():Name(wxT("debug_panel")):
                   CenterPane():PaneBorder(false):CloseButton(false):Show());
       
     -- make some default perspectives
@@ -2885,7 +2944,9 @@ function MyApp:create(parent, id, title, pos, size, style)
     end
 
     function app:save_on_exit(event)    
-        return self.m_doc_nb:save_on_exit(event)
+        if (self.m_doc_modified) then
+            return self.m_doc_nb:save_on_exit(event)
+        end
     end
 
     function app:set_last_file(filename)
@@ -2932,6 +2993,24 @@ function MyApp:create(parent, id, title, pos, size, style)
         toolbar:OnDocPageChange(self.m_doc_nb:get_current_doc())
     end
 
+    function app:OnExit(event)  
+        print("app:OnExit")
+
+        self.m_mgr:DetachPane(self.m_doc_nb);                  
+        self.m_mgr:DetachPane(self.m_log_nb)
+        self.m_mgr:DetachPane(self.m_prj_nb);
+        self.m_mgr:DetachPane(self.m_dbg_nb)
+        
+        for i = 1, #toolbar do
+            self.m_mgr:DetachPane(toolbar[i])
+        end
+        
+        print("detached")   
+        
+        self.m_doc_nb = nil        
+        self.m_prj_nb = nil
+        self.m_mgr = nil
+    end
     self:load_config() 
 
     return self
